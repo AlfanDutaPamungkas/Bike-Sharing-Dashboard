@@ -15,13 +15,44 @@ Dashboard ini menjawab dua pertanyaan utama:
 
 st.header("1. Pengaruh Cuaca terhadap Penyewaan Sepeda di Jam Sibuk")
 
-rush_hours = st.multiselect(
-    "Pilih jam sibuk:",
-    options=list(range(24)),
-    default=[7, 8, 9, 16, 17, 18, 19]
+filter_mode_hours = st.radio(
+    "Pilih mode filter jam:",
+    ["Single", "Multi"],
+    horizontal=True
 )
 
-rush_data = df[df["hr"].isin(rush_hours)]
+rush_hours_options = list(range(24))
+peak_hours = [7, 8, 9, 16, 17, 18, 19]
+
+if filter_mode_hours == "Single":
+    selected_hour = st.selectbox(
+        "Pilih jam sibuk:",
+        options=["All", "Peak Hours"] + rush_hours_options,
+        index=0
+    )
+    if selected_hour == "All":
+        rush_data = df
+    elif selected_hour == "Peak Hours":
+        rush_data = df[df["hr"].isin(peak_hours)]
+    else:
+        rush_data = df[df["hr"] == selected_hour]
+else:
+    selected_hours = st.multiselect(
+        "Pilih jam sibuk:",
+        options=["Peak Hours"] + rush_hours_options,
+        default=["Peak Hours"]
+    )
+    if "Peak Hours" in selected_hours:
+        selected = peak_hours + [h for h in selected_hours if isinstance(h, int)]
+        rush_data = df[df["hr"].isin(selected)]
+    else:
+        rush_data = df[df["hr"].isin(selected_hours)]
+
+filter_mode_weather = st.radio(
+    "Pilih mode filter cuaca:",
+    ["Single", "Multi"],
+    horizontal=True
+)
 
 weather_options = {
     1: "Cerah / Berawan Ringan",
@@ -29,14 +60,25 @@ weather_options = {
     3: "Hujan / Salju Ringan",
     4: "Hujan Deras / Badai"
 }
-selected_weather = st.multiselect(
-    "Pilih kondisi cuaca:",
-    options=list(weather_options.keys()),
-    format_func=lambda x: weather_options[x],
-    default=[1, 2, 3]
-)
 
-filtered_weather = rush_data[rush_data["weathersit"].isin(selected_weather)]
+if filter_mode_weather == "Single":
+    selected_weather = st.selectbox(
+        "Pilih kondisi cuaca:",
+        options=["All"] + list(weather_options.keys()),
+        format_func=lambda x: "Semua Cuaca" if x == "All" else weather_options[x]
+    )
+    if selected_weather == "All":
+        filtered_weather = rush_data
+    else:
+        filtered_weather = rush_data[rush_data["weathersit"] == selected_weather]
+else:
+    selected_weather = st.multiselect(
+        "Pilih kondisi cuaca:",
+        options=list(weather_options.keys()),
+        format_func=lambda x: weather_options[x],
+        default=[1, 2, 3]
+    )
+    filtered_weather = rush_data[rush_data["weathersit"].isin(selected_weather)]
 
 weather_group = filtered_weather.groupby("weathersit")["cnt"].mean().reset_index()
 
@@ -48,7 +90,13 @@ ax1.set_title("Pengaruh Cuaca terhadap Penyewaan Sepeda di Jam Sibuk")
 ax1.set_xticklabels([weather_options[w] for w in weather_group["weathersit"]])
 st.pyplot(fig1)
 
-st.header("2. Bagaimana pola penyewaan sepeda bervariasi sepanjang jam operasional di setiap musim, dan apa perbedaan signifikan antara jam puncak dan jam terendah?")
+st.header("2. Bagaimana pola penyewaan sepeda bervariasi sepanjang jam operasional di setiap musim?")
+
+filter_mode_season = st.radio(
+    "Pilih mode filter musim:",
+    ["Single", "Multi"],
+    horizontal=True
+)
 
 season_options = {
     1: "Semi",
@@ -56,25 +104,39 @@ season_options = {
     3: "Gugur",
     4: "Dingin"
 }
-selected_season = st.multiselect(
-    "Pilih musim:",
-    options=list(season_options.keys()),
-    format_func=lambda x: season_options[x],
-    default=[1, 2, 3, 4]
-)
 
-season_group = df[df["season"].isin(selected_season)]
-season_group = season_group.groupby(["season", "hr"])["cnt"].mean().reset_index()
+if filter_mode_season == "Single":
+    selected_season = st.selectbox(
+        "Pilih musim:",
+        options=["All"] + list(season_options.keys()),
+        format_func=lambda x: "Semua Musim" if x == "All" else season_options[x]
+    )
+    if selected_season == "All":
+        season_filter = df
+        selected_seasons = list(season_options.keys())
+    else:
+        season_filter = df[df["season"] == selected_season]
+        selected_seasons = [selected_season]
+else:
+    selected_seasons = st.multiselect(
+        "Pilih musim:",
+        options=list(season_options.keys()),
+        format_func=lambda x: season_options[x],
+        default=[1, 2, 3, 4]
+    )
+    season_filter = df[df["season"].isin(selected_seasons)]
+
+season_group = season_filter.groupby(["season", "hr"])["cnt"].mean().reset_index()
 
 season_colors = {
-    1: "blue",    
-    2: "orange",  
-    3: "green",   
-    4: "red"      
+    1: "blue",
+    2: "orange",
+    3: "green",
+    4: "red"
 }
 
 fig2, ax2 = plt.subplots()
-for s in selected_season:
+for s in selected_seasons:
     subset = season_group[season_group["season"] == s]
     ax2.plot(
         subset["hr"], subset["cnt"],

@@ -9,6 +9,7 @@ cd Bike-Sharing-Dashboard
 ```
 pipenv install
 pipenv shell
+pip install requirements.txt
 ```
 
 # Run streamlit app

@@ -10,7 +10,7 @@ st.title("🚴‍♂️ Dashboard Bike Sharing")
 st.markdown("""
 Dashboard ini menjawab dua pertanyaan utama:
 1. Bagaimana pengaruh kondisi cuaca terhadap jumlah penyewaan sepeda pada jam sibuk?
-2. Pada jam berapa puncak penyewaan terjadi untuk setiap musim, dan bagaimana selisihnya dengan jam terendah?
+2. Bagaimana pola penyewaan sepeda bervariasi sepanjang jam operasional di setiap musim, dan apa perbedaan signifikan antara jam puncak dan jam terendah?
 """)
 
 st.header("1. Pengaruh Cuaca terhadap Penyewaan Sepeda di Jam Sibuk")
@@ -48,7 +48,7 @@ ax1.set_title("Pengaruh Cuaca terhadap Penyewaan Sepeda di Jam Sibuk")
 ax1.set_xticklabels([weather_options[w] for w in weather_group["weathersit"]])
 st.pyplot(fig1)
 
-st.header("2. Pola Penyewaan Sepeda per Jam untuk Tiap Musim")
+st.header("2. Bagaimana pola penyewaan sepeda bervariasi sepanjang jam operasional di setiap musim, dan apa perbedaan signifikan antara jam puncak dan jam terendah?")
 
 season_options = {
     1: "Semi",

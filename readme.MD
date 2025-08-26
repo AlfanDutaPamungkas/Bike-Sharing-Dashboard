@@ -13,5 +13,5 @@ pipenv shell
 
 # Run streamlit app
 ```
-streamlit run .\dashboard\dashboard.py
+streamlit run ./dashboard/dashboard.py
 ```
